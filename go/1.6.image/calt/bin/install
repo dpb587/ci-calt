@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if [ -e GNUMakefile -o -e Makefile -o -e BSDmakefile -o -e makefile ] ; then
+  exit
+fi
+
+go get $gobuild_args ./...

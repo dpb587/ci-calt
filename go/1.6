@@ -1,0 +1,15 @@
+---
+platform: "linux"
+image: "docker:///dpb587/calt#go-1.6"
+inputs:
+  - name: "build"
+outputs:
+  - name: "artifacts"
+run:
+  path: "/opt/calt/sbin/calt-run"
+params:
+  before_install: ~
+  install: ~
+  before_script: ~
+  script: ~
+  after_script: ~

@@ -1,0 +1,152 @@
+---
+groups:
+  - name: "all"
+    jobs:
+      - "node_js-0.10-image"
+      - "go-1.6-image"
+      - "php-5.6-image"
+      - "ubuntu-trusty-image"
+  - name: "go"
+    jobs:
+      - "go-1.6-image"
+  - name: "node_js"
+    jobs:
+      - "node_js-0.10-image"
+  - name: "php"
+    jobs:
+      - "php-5.6-image"
+  - name: "ubuntu"
+    jobs:
+      - "ubuntu-trusty-image"
+
+jobs:
+  #
+  # base
+  #
+  
+  - name: "ubuntu-trusty-image"
+    serial: true
+    plan:
+      - get: "repo"
+        trigger: true
+      - put: "ubuntu-trusty-image"
+        params:
+          build: "repo/ubuntu/trusty.image"
+        get_params:
+          skip_download: true
+
+  #
+  # go
+  #
+  
+  - name: "go-1.6-image"
+    serial: true
+    plan:
+      - get: "repo"
+        trigger: true
+        passed:
+          - "ubuntu-trusty-image"
+      - put: "go-1.6-image"
+        params:
+          build: "repo/go/1.6.image"
+        get_params:
+          skip_download: true
+
+  #
+  # node_js
+  #
+  
+  - name: "node_js-0.10-image"
+    serial: true
+    plan:
+      - get: "repo"
+        trigger: true
+        passed:
+          - "ubuntu-trusty-image"
+      - put: "node_js-0.10-image"
+        params:
+          build: "repo/node_js/0.10.image"
+        get_params:
+          skip_download: true
+
+  #
+  # php
+  #
+  
+  - name: "php-5.6-image"
+    serial: true
+    plan:
+      - get: "repo"
+        trigger: true
+        passed:
+          - "ubuntu-trusty-image"
+      - put: "php-5.6-image"
+        params:
+          build: "repo/php/5.6.image"
+        get_params:
+          skip_download: true
+
+resources:
+  - name: "repo"
+    type: "git"
+    source:
+      uri: {{repo_uri}}
+      branch: {{repo_branch}}
+      private_key: {{repo_key}}
+  
+  #
+  # ubuntu
+  #
+  
+  - name: "ubuntu-trusty-image"
+    type: "docker-image"
+    source:
+      repository: {{images_repo}}
+      tag: "ubuntu-trusty"
+      email: {{images_email}}
+      username: {{images_username}}
+      password: {{images_password}}
+      insecure_registries: [{{images_insecure_registries}}]
+  
+  #
+  # go
+  #
+
+  - name: "go-1.6-image"
+    type: "docker-image"
+    source:
+      repository: {{images_repo}}
+      tag: "go-1.6"
+      email: {{images_email}}
+      username: {{images_username}}
+      password: {{images_password}}
+      insecure_registries: [{{images_insecure_registries}}]
+  
+  #
+  # node_js
+  #
+
+  - name: "node_js-0.10-image"
+    type: "docker-image"
+    source:
+      repository: {{images_repo}}
+      tag: "node_js-0.10"
+      email: {{images_email}}
+      username: {{images_username}}
+      password: {{images_password}}
+      insecure_registries: [{{images_insecure_registries}}]
+  
+  #
+  # php
+  #
+
+  - name: "php-5.6-image"
+    type: "docker-image"
+    source:
+      repository: {{images_repo}}
+      tag: "php-5.6"
+      email: {{images_email}}
+      username: {{images_username}}
+      password: {{images_password}}
+      insecure_registries: [{{images_insecure_registries}}]
+  

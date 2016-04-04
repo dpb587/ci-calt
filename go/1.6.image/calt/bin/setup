@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+export GOROOT="/opt/go"
+export GOPATH="$HOME/gopath"
+export PATH="$GOPATH/bin:$PATH"
+
+if [ -z "${go_import_path:-}" ] ; then
+  go_import_path=$( grep 'url = ' $PWD/.git/config | awk '{ print $3 }' | sed 's#https://##' | sed -r 's#[^@]+@([^:]+):(.+)#\1/\2#' | sed 's#.git$##' )
+fi
+
+gopathbuild="$HOME/gopath/src/$go_import_path"
+
+mkdir -p "$gopathbuild"
+rsync -az $BUILD_DIR/ "$gopathbuild/"
+
+export BUILD_DIR="$gopathbuild"
+
+cd "$gopathbuild"

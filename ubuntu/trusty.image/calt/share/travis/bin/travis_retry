@@ -1,0 +1,13 @@
+#!/bin/sh
+
+for attempt in 1 2 3 ; do
+  $@
+  exit=$?
+
+  [ "0" -ne "$exit" ] || break
+
+  echo "--> travis_retry: attempt #$attempt exited with $exit"
+  echo
+done
+
+exit $exit

@@ -1,0 +1,92 @@
+#!/bin/bash
+
+set -e
+
+stage () {
+  echo "echo"
+  echo "echo '==> $1'"
+}
+
+TASK_DIR=$PWD
+ARTIFACTS_DIR=$TASK_DIR/artifacts
+BUILD_DIR=$TASK_DIR/build
+
+cd $BUILD_DIR
+
+if [ ! -e artifacts ] ; then
+  ln -s $ARTIFACTS_DIR artifacts
+  [ ! -e .git ] || echo "/artifacts" >> .git/info/exclude
+fi
+
+e="/tmp/execute-$$"
+
+echo '#!/bin/sh' >> $e
+echo 'set -eu' >> $e
+echo "export PATH='$PATH'" >> $e
+echo 'export CI=true' >> $e
+echo 'export CONTINUOUS_INTEGRATION=true' >> $e
+echo 'export DEBIAN_FRONTEND=noninteractive' >> $e
+echo "export ARTIFACTS_DIR='$ARTIFACTS_DIR'" >> $e
+echo "export BUILD_DIR='$BUILD_DIR'" >> $e
+echo 'export PATH="$PATH:/opt/calt/share/travis/bin"' >> $e
+echo 'cd $BUILD_DIR' >> $e
+echo '. /opt/calt/share/travis/setup.sh' >> $e
+
+if [ -e /opt/calt/bin/setup ] ; then
+  echo '. /opt/calt/bin/setup' >> $e
+fi
+
+echo "uname -v" >> $e
+
+if [ -e /opt/calt/bin/announce ] ; then
+  echo "/opt/calt/bin/announce" >> $e
+fi
+
+if [ -n "$before_install" ] ; then
+  stage before_install >> $e
+  echo "( set -e ; $before_install )" >> $e
+elif [ -e /opt/calt/bin/before_install ] ; then
+  stage before_install >> $e
+  echo "/opt/calt/bin/before_install" >> $e
+fi
+
+if [ -n "$install" ] ; then
+  stage install >> $e
+  echo "( set -e ; $install )" >> $e
+elif [ -e /opt/calt/bin/install ] ; then
+  stage install >> $e
+  echo "/opt/calt/bin/install" >> $e
+fi
+
+if [ -n "$before_script" ] ; then
+  stage before_script >> $e
+  echo "( set -e ; $before_script )" >> $e
+elif [ -e /opt/calt/bin/before_script ] ; then
+  stage before_script >> $e
+  echo "/opt/calt/bin/before_script" >> $e
+fi
+
+echo "set +e" >> $e
+
+if [ -n "$script" ] ; then
+  stage script >> $e
+  echo "( set -e ; $script )" >> $e
+elif [ -e /opt/calt/bin/script ] ; then
+  stage script >> $e
+  echo "/opt/calt/bin/script" >> $e
+fi
+
+echo "exit=\$?" >> $e
+
+if [ -n "$after_script" ] ; then
+  stage after_script >> $e
+  echo "( set -e ; $after_script )" >> $e
+elif [ -e /opt/calt/bin/after_script ] ; then
+  stage after_script >> $e
+  echo "/opt/calt/bin/after_script" >> $e
+fi
+
+echo "exit \$exit" >> $e
+
+chmod +x $e
+su - root -c $e
